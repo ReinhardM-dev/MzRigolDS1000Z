@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DS1000Z/MSO1000Z Oscilloscopes &mdash; RigolDS1000Z V0.9.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="DSxxxx/MSOxxxx Oscilloscopes" href="base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> RigolDS1000Z
+          </a>
+              <div class="version">
+                V0.9
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="driver.html">Rigol Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">DSxxxx/MSOxxxx Oscilloscopes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DS1000Z/MSO1000Z Oscilloscopes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">RigolDS1000Z</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>DS1000Z/MSO1000Z Oscilloscopes</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ds1000.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-DS1000">
+<span id="ds1000z-mso1000z-oscilloscopes"></span><h1>DS1000Z/MSO1000Z Oscilloscopes<a class="headerlink" href="#module-DS1000" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="DS1000.DS1000Z">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DS1000.</span></span><span class="sig-name descname"><span class="pre">DS1000Z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resourceName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">openTimeout_msec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resourceManager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pyvisa.highlevel.ResourceManager</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/DS1000.html#DS1000Z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="base.html#base.DigitalOscilloscopeBase" title="base.DigitalOscilloscopeBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">base.DigitalOscilloscopeBase</span></code></a></p>
+<p>Class of enhanced Rigol DS1000Z and MSO DS1000Z operations:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resourceName</strong> – USB or GPIB INSTR resource</p></li>
+<li><p><strong>openTimeout_msec</strong> – Time delay on opening</p></li>
+<li><p><strong>resourceManager</strong> – VISA Resource Manager (DEF: use <code class="docutils literal notranslate"><span class="pre">DigitalOscilloscopeBase.resourceManager</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">DS1000Z implementation</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Item</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:CURSor</em></p></td>
+<td><p>Measurements using horizontal and vertical cursors</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DECoder</em></p></td>
+<td><p>Analysis of buses (replaced by <em>:BUS</em> in modern devices)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MASK</em></p></td>
+<td><p>Analysis by pass/fail Tests</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH</em></p></td>
+<td><p>Mathematical operations on waveforms</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MEASure</em></p></td>
+<td><p>Automatic measurement of waveform parameters</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:REFerence</em></p></td>
+<td><p>Use of reference waveforms for comparison</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>According to Rigol’s documentation, these methods run on all series DS1000Z/MSO1000Z oscilloscopes.
+The commands are partly available with a modified syntax in the following series:</p>
+<ul class="simple">
+<li><p>DS2000A/MSO2000A</p></li>
+<li><p>MSO5000</p></li>
+<li><p>DS7000/MSO7000</p></li>
+<li><p>DS70000</p></li>
+</ul>
+<p>For example, the :DECoder group has be replaced by the :BUS group. 
+The compatibility can be tested at best by using the test environment found on <a class="reference external" href="https://github.com/ReinhardM-dev/RigolDS1000Z">RigolDS1000Z</a></p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.createMASK">
+<span class="sig-name descname"><span class="pre">createMASK</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resetStatisticsOnly</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.createMASK"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.createMASK" title="Permalink to this definition"></a></dt>
+<dd><p>For the :MASK command, create a mask</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>resetStatisticsOnly</strong> – return after resetting the displayed statistics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getCURSSettings">
+<span class="sig-name descname"><span class="pre">getCURSSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getCURSSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getCURSSettings" title="Permalink to this definition"></a></dt>
+<dd><p>For the :CURSor command, it returns the following settings:</p>
+<table class="colwidths-given docutils align-default" id="id2">
+<caption><span class="caption-text">CURSor Modes</span><a class="headerlink" href="#id2" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 11%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:CURS:MAN</em></p></td>
+<td><p>Manually defined cursor</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:TRAC</em></p></td>
+<td><p>Tracking cursor defined x-value with tracking y-value</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:AUTO</em></p></td>
+<td><p>Automatic cursor defined by a :MEAS:ITEM</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:XY</em></p></td>
+<td><p>XY cursor</p></td>
+<td><p>available only :TIMebase:MODE == XY mode</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:OFF</em></p></td>
+<td><p>No cursor enabled</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id3">
+<caption><span class="caption-text">Trigger Mode Parameters</span><a class="headerlink" href="#id3" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:CURS:&lt;m&gt;:AX</em></p></td>
+<td><p>int</p></td>
+<td><p>Horizontal position of cursor A on screen (RO for AUTO mode)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:&lt;m&gt;:BX</em></p></td>
+<td><p>int</p></td>
+<td><p>Horizontal position of cursor B on screen (RO for AUTO mode)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:&lt;m&gt;:AY</em></p></td>
+<td><p>int</p></td>
+<td><p>Vertical position of cursor A on screen (RO for TRAC and AUTO modes)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:&lt;m&gt;:BY</em></p></td>
+<td><p>int</p></td>
+<td><p>Vertical position of cursor B on screen (RO for TRAC and AUTO modes)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:&lt;m&gt;:AXValue?</em></p></td>
+<td><p>float</p></td>
+<td><p>Value at AX</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:&lt;m&gt;:BXValue?</em></p></td>
+<td><p>float</p></td>
+<td><p>Value at BX</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:&lt;m&gt;:AYValue?</em></p></td>
+<td><p>float</p></td>
+<td><p>Value at AY</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:&lt;m&gt;:AYValue?</em></p></td>
+<td><p>float</p></td>
+<td><p>Value at BY</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:&lt;m&gt;:XDelta</em></p></td>
+<td><p>float</p></td>
+<td><p>AXValue - BXValue</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:&lt;m&gt;:YDelta</em></p></td>
+<td><p>float</p></td>
+<td><p>AYValue - BYValue</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:&lt;m&gt;:IXDelta</em></p></td>
+<td><p>float</p></td>
+<td><p>1/(AXValue - BXValue)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:MAN:SOURce</em></p></td>
+<td><p>str</p></td>
+<td><p>Source Channel (OFF|CHAN1|CHAN2|CHAN3|CHAN4|MATH)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:MAN:TYPE[12]</em></p></td>
+<td><p>str</p></td>
+<td><p>Type of cursor (x|y)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:MAN:TUnit</em></p></td>
+<td><p>str</p></td>
+<td><p>Unit of x-values (S|HZ|DEGRee|PERCent)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:MAN:VUnit</em></p></td>
+<td><p>str</p></td>
+<td><p>Unit of y-values (DEGRee|PERCent)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:MAN:VUnit</em></p></td>
+<td><p>str</p></td>
+<td><p>Unit of y-values (DEGRee|PERCent)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:CURS:TRAC:SOURce[12]</em></p></td>
+<td><p>str</p></td>
+<td><p>Source Channel (OFF|CHAN1|CHAN2|CHAN3|CHAN4|MATH)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:CURS:AUTO:ITEM</em></p></td>
+<td><p>str</p></td>
+<td><p>Item defining the cursors (see :MEAS:ITEM)</p></td>
+</tr>
+</tbody>
+</table>
+<p>All parameters ending with a ? are readonly, the others are RW.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mode</strong> – cursor mode</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict[key, value]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getDECSettings">
+<span class="sig-name descname"><span class="pre">getDECSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getDECSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getDECSettings" title="Permalink to this definition"></a></dt>
+<dd><p>For the :DECoder command, it returns the following settings:
+The :DECoder command is available only on the DS1000/MSO1000 oscilloscopes,
+later devices support the :BUS command.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> – decoder ID to be queried</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict[key, value]</p>
+</dd>
+</dl>
+<table class="colwidths-given docutils align-default" id="id4">
+<caption><span class="caption-text">Bus Types</span><a class="headerlink" href="#id4" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 11%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Opt</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:DEC:PARallel</em></p></td>
+<td></td>
+<td><p>Clock and 1 data bit line of a Parallel Bus Interface (<a class="reference external" href="https://en.wikipedia.org/wiki/Parallel_Bus_Interface">PBI</a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:UART</em></p></td>
+<td></td>
+<td><p>Universal Asynchronous Receiver Transmitter (<a class="reference external" href="https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter">UART</a>) bus</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:IIC</em></p></td>
+<td><p>Inter-Integrated Circuit (<a class="reference external" href="https://en.wikipedia.org/wiki/I%C2%B2C">IIC</a>) interface</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:IIC</em></p></td>
+<td><p>Serial Peripheral Interface (<a class="reference external" href="https://en.wikipedia.org/wiki/I%C2%B2C">SPI</a>)</p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id5">
+<caption><span class="caption-text">General Parameters</span><a class="headerlink" href="#id5" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:TRIG:&lt;m&gt;:ADDRess</em></p></td>
+<td><p>int</p></td>
+<td><p>address in I2C trigger</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:MODE</em></p></td>
+<td><p>PAR|UART|SPI|IIC</p></td>
+<td><p>Decoder bus</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:DISPlay</em> 0|1</p></td>
+<td><p>Status of decoder</p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:FORMat</em></p></td>
+<td><p>HEX|ASCii|DEC|BIN|LINE</p></td>
+<td><p>Bus display format</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:POSition</em></p></td>
+<td><p>int</p></td>
+<td><p>Vertical position of the bus on screen</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:THREshold:CHANnel[1-4]</em></p></td>
+<td><p>float</p></td>
+<td><p>Threshold level (only if :DEC:THREshold:AUTO == 0)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:THREshold:AUTO</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of the auto threshold for an analog channel</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:CONFig:LABel</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of the label display</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:CONFig:LINE</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of the bus display</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:CONFig:FORMat</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of the bus format display</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:CONFig:ENDian</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of the bus endian display</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:DEC:CONFig:WIDth</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of the frame width display</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:DEC:CONFig:SRATe?</em></p></td>
+<td><p>float</p></td>
+<td><p>Sample rate</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id6">
+<caption><span class="caption-text">:DEC:&lt;Bus&gt; Parameters</span><a class="headerlink" href="#id6" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>ADDRess</em></p></td>
+<td><p>NORM|RW</p></td>
+<td><p>Status of address mode of IIC decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>BAUD</em></p></td>
+<td><p>int</p></td>
+<td><p>Baud rate of UART decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>BITX</em></p></td>
+<td><p>int</p></td>
+<td><p>Data bit for the parallel bus</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>CCOMpensation</em></p></td>
+<td><p>float</p></td>
+<td><p>Clock compensation time for parallel decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>CLK</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>Clock channel</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>CS</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>CS channel of SPI decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>DATA</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>Data channel of IIC decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>EDGE</em></p></td>
+<td><p>RISE|FALL</p></td>
+<td><p>Edge selection</p></td>
+</tr>
+<tr class="row-even"><td><p><em>ENDian</em></p></td>
+<td><p>LSB|MSB</p></td>
+<td><p>Endian of data</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>MISO</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>MISO channel of SPI decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>MODE</em></p></td>
+<td><p>CS|TIMeout</p></td>
+<td><p>Frame synchronization mode of SPI decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>MOSI</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>MOSI channel of SPI decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>NREJect</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of noise rejection function of parallel decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>NRTime</em></p></td>
+<td><p>float</p></td>
+<td><p>Noise rejection time of parallel decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>PARity</em></p></td>
+<td><p>NONE|EVEN|ODD</p></td>
+<td><p>Mode of transmission of UART decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>PLOT</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Status of curve function for parallel decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>POLarity</em></p></td>
+<td><p>POS|NEG</p></td>
+<td><p>Polarity of the SDA data line in SPI decoding.</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>RX</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>RX channel of UART decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>SELect</em></p></td>
+<td><p>NCS|CS</p></td>
+<td><p>CS polarity in SPI decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>SOURCe</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>Data channel of IIC decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>STOP</em></p></td>
+<td><p>1|1.5|2</p></td>
+<td><p>Number of stop bits of UART decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>TIMeout</em></p></td>
+<td><p>real</p></td>
+<td><p>Timeout for SPI decoding</p></td>
+</tr>
+<tr class="row-even"><td><p><em>TX</em></p></td>
+<td><p>CHAN&lt;m&gt;|D&lt;m&gt;</p></td>
+<td><p>TX channel of UART decoding</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>WIDth</em></p></td>
+<td><p>int</p></td>
+<td><p>Frame width (number of bits)</p></td>
+</tr>
+</tbody>
+</table>
+<p>All parameters are RW.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getMASKSettings">
+<span class="sig-name descname"><span class="pre">getMASKSettings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getMASKSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getMASKSettings" title="Permalink to this definition"></a></dt>
+<dd><p>For the :MASK command, it returns the following settings:</p>
+<table class="colwidths-given docutils align-default" id="id7">
+<caption><span class="caption-text">MASK Settings</span><a class="headerlink" href="#id7" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:MASK:ENABle</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Pass/fail test enabled</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MASK:SOURce</em></p></td>
+<td><p>CHAN&lt;n&gt;</p></td>
+<td><p>Source for pass/fail test</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MASK:OPERate</em></p></td>
+<td><p>RUN|STOP</p></td>
+<td><p>Status of pass/fail test</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MASK:MDISplay</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Pass/fail test statistic display enabled</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MASK:SOOutput</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Stop-on-Fail for pass/fail test enabled</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MASK:OUTPut</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Sound for pass/fail test enabled</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MASK:X</em></p></td>
+<td><p>float</p></td>
+<td><p>Relative horizontal window for pass/fail [time division]</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MASK:Y</em></p></td>
+<td><p>float</p></td>
+<td><p>Relative vertical window for pass/fail [vertical division]</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MASK:PASSed?</em></p></td>
+<td><p>int</p></td>
+<td><p>Number of passed frames</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MASK:FAILed?</em></p></td>
+<td><p>int</p></td>
+<td><p>Number of failed frames</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MASK:TOTal?</em></p></td>
+<td><p>int</p></td>
+<td><p>Total number of frames</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dict[key, value]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getMATHSettings">
+<span class="sig-name descname"><span class="pre">getMATHSettings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getMATHSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getMATHSettings" title="Permalink to this definition"></a></dt>
+<dd><p>For the :MATH command, it returns the following settings:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dict[key, value]</p>
+</dd>
+</dl>
+<table class="colwidths-given docutils align-default" id="id8">
+<caption><span class="caption-text">:MATH items</span><a class="headerlink" href="#id8" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 23%" />
+<col style="width: 54%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:MATH:SOURce[12]</em></p></td>
+<td><p>CHAN&lt;n&gt;|FX</p></td>
+<td><p>Source for algebraic operation/functional operation</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:LSOURce[12]</em></p></td>
+<td><p>CHAN&lt;n&gt;|D&lt;n&gt;</p></td>
+<td><p>Source for logic operation</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OPTion:FX:SOURce[12]</em></p></td>
+<td><p>CHAN&lt;n&gt;</p></td>
+<td><p>Source for inner layer algebraic operation</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:FFT:SOURce</em></p></td>
+<td><p>CHAN&lt;n&gt;</p></td>
+<td><p>Source for Fast Fourier Transform</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:DISPlay</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Math operation display status</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:OPERator</em></p></td>
+<td><p>str</p></td>
+<td><p>Algebraic or functional operator</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OPTion:FX:OPERator</em></p></td>
+<td><p>str</p></td>
+<td><p>Algebraic operator for inner layer algebraic operation</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:SCALe</em></p></td>
+<td><p>float</p></td>
+<td><p>Vertical scale of the operation result</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OFFSet</em></p></td>
+<td><p>float</p></td>
+<td><p>Vertical offset of the operation result</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:INVert</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Inverted display mode</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:FILTer:TYPE</em></p></td>
+<td><p>str</p></td>
+<td><p>Filter operation (LPASs|HPASs|BPASs|BSTOP)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:FILTer:W[12]</em></p></td>
+<td><p>float</p></td>
+<td><p>Cutoff frequency of the filter</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OPTion:STARt</em></p></td>
+<td><p>int</p></td>
+<td><p>First point on screen</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:OPTion:END</em></p></td>
+<td><p>int</p></td>
+<td><p>Last point on screen</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OPTion:SENSitivity</em></p></td>
+<td><p>float</p></td>
+<td><p>Sensitivity for logic operations</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:OPTion:DIStance</em></p></td>
+<td><p>float</p></td>
+<td><p>Smoothing window width for differentiation (<em>DIFF</em>)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OPTion:ASCale</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Auto scale setting for vertical axis</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:OPTion:THReshold[12]</em></p></td>
+<td><p>float</p></td>
+<td><p>Threshold for logic operations</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:OPTion:SENSitivity</em></p></td>
+<td><p>float</p></td>
+<td><p>Sensitivity of the logic operations</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:FFT:WINDow</em></p></td>
+<td><p>str</p></td>
+<td><p>Digital window for FFT (RECT|BLAC|HANN|HAMM|FLAT|TRI)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:FFT:SPLit</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Half-screen display mode for FFT</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:FFT:UNIT</em></p></td>
+<td><p>VRMS|DB</p></td>
+<td><p>Unit for FFT result</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:FFT:HSCale</em></p></td>
+<td><p>float</p></td>
+<td><p>Horizontal scale for the FFT</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MATH:FFT:HCENter</em></p></td>
+<td><p>float</p></td>
+<td><p>Center frequency for the FFT</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MATH:FFT:MODE</em></p></td>
+<td><p>TRAC|MEM</p></td>
+<td><p>Data source of the FFT (Memory or display)</p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id9">
+<caption><span class="caption-text">:MATH operators</span><a class="headerlink" href="#id9" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Members</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>Algebraic Operators</em></p></td>
+<td><p>ADD|SUBTract|MULTiply|DIVision</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>Functional Operators</em></p></td>
+<td><p>INTG|DIFF|SQRT|LOG|LN|EXP|ABS</p></td>
+</tr>
+<tr class="row-even"><td><p><em>Logic Operators</em></p></td>
+<td><p>AND|OR|XOR|NOT</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>Filters</em></p></td>
+<td><p>LPASs|HPASs|BPASs|BSTOP</p></td>
+</tr>
+<tr class="row-even"><td><p><em>FFT</em></p></td>
+<td><p>Fast Fourier Transform</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getMEASItem1Source">
+<span class="sig-name descname"><span class="pre">getMEASItem1Source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clearOnDevice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getMEASItem1Source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getMEASItem1Source" title="Permalink to this definition"></a></dt>
+<dd><p>Perform measurements using the :MEAS:ITEM command with 1 source</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – source channel (CHAN&lt;n&gt;|D&lt;n&gt;|MATH)</p></li>
+<li><p><strong>items</strong> – list of items (see below) to be queried</p></li>
+<li><p><strong>clearOnDevice</strong> – clear values on the device</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict[key, value]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Digital source can only D&lt;n&gt; limited to items marked in column “D” of the table</p>
+</div>
+<table class="colwidths-given docutils align-default" id="id10">
+<caption><span class="caption-text">MEAS:ITEM items</span><a class="headerlink" href="#id10" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 9%" />
+<col style="width: 64%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>D</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>FREQuency</em></p></td>
+<td><p>Y</p></td>
+<td><p>1/PERiod</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>FTIMe</em></p></td>
+<td></td>
+<td><p>Time span between upper and lower threshold (falling edge)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>MARea</em></p></td>
+<td></td>
+<td><p>Integral over the waveform on the screen difference from middle point</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>MPARea</em></p></td>
+<td><p>MArea over the 1. period</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><em>NDUTy</em></p></td>
+<td><p>Y</p></td>
+<td><p>NWIDth / PERiod</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>NEDGes</em></p></td>
+<td></td>
+<td><p>Number of falling edges (from above upper threshold to below lower threshold)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>NPULses</em></p></td>
+<td></td>
+<td><p>Number of negative pulses of the waveform (voltage below lower threshold)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>NSLEWrate</em></p></td>
+<td></td>
+<td><p>(VLOWer - VUPper) / FTIMe</p></td>
+</tr>
+<tr class="row-even"><td><p><em>NWIDth</em></p></td>
+<td><p>Y</p></td>
+<td><p>Time span between the middle points of a falling or a rising edge (negative width)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>OVERshoot</em></p></td>
+<td></td>
+<td><p>VMAX - VTOP</p></td>
+</tr>
+<tr class="row-even"><td><p><em>PDUTy</em></p></td>
+<td><p>Y</p></td>
+<td><p>PWIDth / PERiod</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>PEDGes</em></p></td>
+<td></td>
+<td><p>Number of rising edges (from below lower threshold to above upper threshold)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>PERiod</em></p></td>
+<td><p>Y</p></td>
+<td><p>PWIDth + NWIDth</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>PPULses</em></p></td>
+<td></td>
+<td><p>Number of positive pulses of the waveform (voltage above upper threshold)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>PREShoot</em></p></td>
+<td></td>
+<td><p>VBASe - VMIN</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>PSLEWrate</em></p></td>
+<td></td>
+<td><p>(VUPper - VLOWer) / RTIMe</p></td>
+</tr>
+<tr class="row-even"><td><p><em>PVRMS</em></p></td>
+<td></td>
+<td><p>Root mean square voltage over the 1. period SUM_i(V(i)^2)/points</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>PWIDth</em></p></td>
+<td><p>Y</p></td>
+<td><p>Time span between the middle points of a rising or a falling edge (positive width)</p></td>
+</tr>
+<tr class="row-even"><td><p><em>RTIMe</em></p></td>
+<td></td>
+<td><p>Time span between lower and upper threshold (rising edge)</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>TVMAX</em></p></td>
+<td></td>
+<td><p>Time corresponding to VMAX</p></td>
+</tr>
+<tr class="row-even"><td><p><em>TVMIN</em></p></td>
+<td></td>
+<td><p>Time corresponding to VMIN</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>VAMP</em></p></td>
+<td></td>
+<td><p>VTOP - VBASe</p></td>
+</tr>
+<tr class="row-even"><td><p><em>VARIance</em></p></td>
+<td></td>
+<td><p>Voltage variance over the whole waveform SUM_i((VAMP(i) - VAVG)^2)/periods</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>VAVG</em></p></td>
+<td></td>
+<td><p>Average voltage over the whole waveform</p></td>
+</tr>
+<tr class="row-even"><td><p><em>VBASe</em></p></td>
+<td></td>
+<td><p>Voltage value from the flat base of the waveform</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>VLOWer</em></p></td>
+<td></td>
+<td><p>Lower threshold voltage</p></td>
+</tr>
+<tr class="row-even"><td><p><em>VMAX</em></p></td>
+<td></td>
+<td><p>Maximum voltage</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>VMID</em></p></td>
+<td></td>
+<td><p>Middle point voltage (VTOP + VBASe)/2</p></td>
+</tr>
+<tr class="row-even"><td><p><em>VMIN</em></p></td>
+<td></td>
+<td><p>Minimum voltage</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>VPP</em></p></td>
+<td></td>
+<td><p>VMAX -VMIN</p></td>
+</tr>
+<tr class="row-even"><td><p><em>VRMS</em></p></td>
+<td></td>
+<td><p>PVRMS over the full waveform</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>VTOP</em></p></td>
+<td></td>
+<td><p>Voltage value from the flat top of the waveform</p></td>
+</tr>
+<tr class="row-even"><td><p><em>VUPper</em></p></td>
+<td></td>
+<td><p>Upper threshold voltage</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getMEASItem2Source">
+<span class="sig-name descname"><span class="pre">getMEASItem2Source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clearOnDevice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getMEASItem2Source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getMEASItem2Source" title="Permalink to this definition"></a></dt>
+<dd><p>Perform measurements using the :MEAS:ITEM command with 2 sources</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source1</strong> – source channel (CHAN&lt;n&gt;|D&lt;n&gt;|MATH)</p></li>
+<li><p><strong>source2</strong> – source channel (CHAN&lt;n&gt;|D&lt;n&gt;|MATH)</p></li>
+<li><p><strong>items</strong> – list of items (see below) to be queried</p></li>
+<li><p><strong>clearOnDevice</strong> – clear values on the device</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict[key, value]</p>
+</dd>
+</dl>
+<table class="colwidths-given docutils align-default" id="id11">
+<caption><span class="caption-text">MEAS:ITEM items</span><a class="headerlink" href="#id11" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>RDELay</em></p></td>
+<td><p>Time difference between rising edges</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>FDELay</em></p></td>
+<td><p>Time difference between falling edges</p></td>
+</tr>
+<tr class="row-even"><td><p><em>RPHase</em></p></td>
+<td><p>Phase difference between rising edges</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>FPHase</em></p></td>
+<td><p>Phase difference between falling edges</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getMEASThresholdSettings">
+<span class="sig-name descname"><span class="pre">getMEASThresholdSettings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getMEASThresholdSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getMEASThresholdSettings" title="Permalink to this definition"></a></dt>
+<dd><p>Perform measurements using the :MEAS:SET: command with 1 source</p>
+<table class="colwidths-given docutils align-default" id="id12">
+<caption><span class="caption-text">MEAS:ITEM items</span><a class="headerlink" href="#id12" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:MEASure:SETup:MAX</em></p></td>
+<td><p>Relative upper threshold VMAX = VBAse + th * VAMP</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:MEASure:SETup:MID</em></p></td>
+<td><p>Mid point VMID = VBAse + tm * VAMP</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:MEASure:SETup:MIN</em></p></td>
+<td><p>Relative lower threshold VMIN = VBAse + th * VAMP</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dict[key, value]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.getREFSettings">
+<span class="sig-name descname"><span class="pre">getREFSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.getREFSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.getREFSettings" title="Permalink to this definition"></a></dt>
+<dd><p>For the :REFerence command, it returns the following settings:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> – reference channel to be queried</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dict[key, value]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is no (documented) way to read the reference waveforms</p>
+</div>
+<table class="colwidths-given docutils align-default" id="id13">
+<caption><span class="caption-text">REF Settings</span><a class="headerlink" href="#id13" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 27%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Range</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><em>:REF:DISPlay</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Display all reference channels</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:REF&lt;n&gt;:ENABle</em></p></td>
+<td><p>0|1</p></td>
+<td><p>Enable reference channel</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:REF&lt;n&gt;:SOURce</em></p></td>
+<td><p>CHAN&lt;n&gt;|D&lt;n&gt;</p></td>
+<td><p>Source for reference channel</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:REF&lt;n&gt;:VSCale</em></p></td>
+<td><p>float</p></td>
+<td><p>Vertical scale for reference channel</p></td>
+</tr>
+<tr class="row-even"><td><p><em>:REF&lt;n&gt;:VOFFset</em></p></td>
+<td><p>float</p></td>
+<td><p>Vertical offset for reference channel</p></td>
+</tr>
+<tr class="row-odd"><td><p><em>:REF&lt;n&gt;:COLor</em></p></td>
+<td><p>GRAY|GREE|LBL|MAG|ORAN</p></td>
+<td><p>Color of the reference channel (LBL == light blue)</p></td>
+</tr>
+</tbody>
+</table>
+<p>All parameters are RW.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="DS1000.DS1000Z.saveREFSettings">
+<span class="sig-name descname"><span class="pre">saveREFSettings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/DS1000.html#DS1000Z.saveREFSettings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#DS1000.DS1000Z.saveREFSettings" title="Permalink to this definition"></a></dt>
+<dd><p>For the :REFerence command, save the settings of a reference channel</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Via the instrument the reference waveforms can be saved in a ‘*.ref’ binary file,
+whose format is undocumented.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> – reference channel to be saved</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="base.html" class="btn btn-neutral float-left" title="DSxxxx/MSOxxxx Oscilloscopes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Reinhard März.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

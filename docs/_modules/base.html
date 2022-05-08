@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>base &mdash; RigolDS1000Z V0.9.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> RigolDS1000Z
+          </a>
+              <div class="version">
+                V0.9
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../driver.html">Rigol Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../base.html">DSxxxx/MSOxxxx Oscilloscopes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ds1000.html">DS1000Z/MSO1000Z Oscilloscopes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">RigolDS1000Z</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for base</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">string</span><span class="o">,</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">pyvisa</span>
+<span class="kn">import</span> <span class="nn">driver</span>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase">[docs]</a><span class="k">class</span> <span class="nc">DigitalOscilloscopeBase</span><span class="p">(</span><span class="n">driver</span><span class="o">.</span><span class="n">Instrument</span><span class="p">):</span>
+ <span class="sd">&quot;&quot;&quot;Base class of Rigol digital oscilloscopes of the types DSnnnn and MSOnnnn providing:</span>
+<span class="sd"> </span>
+<span class="sd">:param resourceName: USB or GPIB INSTR resource</span>
+<span class="sd">:param openTimeout_msec: Time delay on opening</span>
+<span class="sd">:param resourceManager: VISA Resource Manager (DEF: use ``DigitalOscilloscopeBase.resourceManager``)</span>
+<span class="sd"> </span>
+<span class="sd">.. csv-table:: DigitalOscilloscopeBase implementation</span>
+<span class="sd"> :header: &quot;Item&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 70</span>
+<span class="sd">   </span>
+<span class="sd"> *:ACQuire*, Parameters of the digital electronics</span>
+<span class="sd"> *:CHANnel*, Vertical axis parameters of the analog channels</span>
+<span class="sd"> *:DISPlay*, Display parameters and data</span>
+<span class="sd"> *:TIMebase*, Parameters to handle the horizontal timebase mode</span>
+<span class="sd"> *:TRIGger*, Parameters to handle the trigger system </span>
+<span class="sd"> *:WAVeform*, Parameters to handle waveform settings and data</span>
+<span class="sd"> </span>
+<span class="sd">.. note::</span>
+<span class="sd"> The software has been developed by using a DS1054Z, Software: 00.04.05.SP2.</span>
+<span class="sd"> Several product properties are not available through the remote interface and were derived from model name:</span>
+<span class="sd">  </span>
+<span class="sd"> * pointsPerTimeDivision</span>
+<span class="sd"> * bandwidth_MHz</span>
+<span class="sd"> * numberOfDecoders</span>
+<span class="sd"> * numberOfDigitalChannels</span>
+<span class="sd"> </span>
+<span class="sd">.. note::</span>
+
+<span class="sd">  According to Rigol&#39;s documentation, these methods run on all series DS1000Z/MSO1000Z oscilloscopes.</span>
+<span class="sd">  Although not tested, they are expected to run on following series: </span>
+<span class="sd">  </span>
+<span class="sd">  * DS2000A/MSO2000A</span>
+<span class="sd">  * MSO5000</span>
+<span class="sd">  * DS7000/MSO7000</span>
+<span class="sd">  * DS70000</span>
+<span class="sd">  </span>
+<span class="sd">  The compatibility can be tested at best by using the test environment found on `RigolDS1000Z`_</span>
+<span class="sd">  </span>
+<span class="sd">.. _RigolDS1000Z: https://github.com/ReinhardM-dev/RigolDS1000Z</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+ <span class="n">resourceManager</span> <span class="o">=</span> <span class="n">pyvisa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+ <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resourceName</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">openTimeout_msec</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>  
+                           <span class="n">resourceManager</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pyvisa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+                           <span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="nb">super</span><span class="p">(</span><span class="n">DigitalOscilloscopeBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">resourceName</span><span class="p">,</span> <span class="n">openTimeout_msec</span><span class="p">,</span> <span class="n">resourceManager</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">250000</span> <span class="c1"># ensure that a RIGOL :WAV:DATA? chunk is read in 1 step</span>
+  <span class="n">modelMatch</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="s1">&#39;(DS[1-9]|MSO[1-9])([0-9][0-9])([1-9])([^1-9]+)&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">],</span> <span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+  <span class="k">assert</span> <span class="n">modelMatch</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+  <span class="n">matchGroups</span> <span class="o">=</span> <span class="n">modelMatch</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">000</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">matchGroups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">matchGroups</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;bandwidth_MHz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">*</span><span class="nb">int</span><span class="p">(</span><span class="n">matchGroups</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;PLUS&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;MSO&#39;</span><span class="p">):</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;digitalChannels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;digitalChannels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;(DS|MSO)1&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;series&#39;</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;decoders&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;decoders&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:SYST:RAM?&#39;</span><span class="p">))</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;numberOfTimeDivisions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:SYST:GAM?&#39;</span><span class="p">))</span>
+  <span class="n">wfSettings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getWAVSettings</span><span class="p">()</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;pointsPerTimeDivision&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:POINts?&#39;</span><span class="p">]</span><span class="o">//</span><span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;numberOfTimeDivisions&#39;</span><span class="p">]</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfAnalogChannels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Number of channels&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfDigitalChannels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Number of digital channels&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;digitalChannels&#39;</span><span class="p">]</span>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfReferenceChannels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Number of reference channels&quot;</span>
+  <span class="k">return</span> <span class="mi">10</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfDecoders</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Number of decoder units&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;decoders&#39;</span><span class="p">]</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">numberOfTimeDivisions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Number of time divisions on screen&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;numberOfTimeDivisions&#39;</span><span class="p">]</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">pointsPerTimeDivision</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: points per time division&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;pointsPerTimeDivision&#39;</span><span class="p">]</span>
+
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">bandwidth_MHz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Bandwidth in MHz&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;bandwidth_MHz&#39;</span><span class="p">]</span>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">minRiseTime_nsec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Minimum rise time that can be resolved&quot;</span>
+  <span class="k">return</span> <span class="mf">350.0</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">_idnDict</span><span class="p">[</span><span class="s1">&#39;bandwidth_MHz&#39;</span><span class="p">]</span>
+  
+ <span class="nd">@property</span>
+ <span class="k">def</span> <span class="nf">triggerStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+  <span class="s2">&quot;:returns: Trigger status (TD|WAIT|RUN|AUTO|STOP)&quot;</span>
+  <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:STAT?&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setAutoscale"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setAutoscale">[docs]</a> <span class="k">def</span> <span class="nf">setAutoscale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="s2">&quot;Equivalent to pressing the AUTO key at the front panel&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:AUT&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setClEar"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setClEar">[docs]</a> <span class="k">def</span> <span class="nf">setClEar</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="s2">&quot;Clear all the waveforms on the screen&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:CLE&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setRUN"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setRUN">[docs]</a> <span class="k">def</span> <span class="nf">setRUN</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="s2">&quot;Moves the oscilloscope into RUN mode&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:RUN&#39;</span><span class="p">)</span>
+  <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setSTOP"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setSTOP">[docs]</a> <span class="k">def</span> <span class="nf">setSTOP</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Moves the oscilloscope into STOP mode</span>
+
+<span class="sd">.. note::</span>
+<span class="sd"> The :ACQuire:MDEPth command is not available in STOP mode</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:STOP&#39;</span><span class="p">)</span>
+  <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setSINGle"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setSINGle">[docs]</a> <span class="k">def</span> <span class="nf">setSINGle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="s2">&quot;Moves the oscilloscope into :TRIGger:SWEep:SINGle mode&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:SING&#39;</span><span class="p">)</span>
+  <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setTFORce"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setTFORce">[docs]</a> <span class="k">def</span> <span class="nf">setTFORce</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="s2">&quot;Forces triggering of the oscilloscope&quot;</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:TFOR&#39;</span><span class="p">)</span>
+  <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+  
+<div class="viewcode-block" id="DigitalOscilloscopeBase.setSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.setSettings">[docs]</a> <span class="k">def</span> <span class="nf">setSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settingsDict</span> <span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Uses any dictionary created by a getXXXSettings or any part or combinations of them</span>
+<span class="sd">to set variables on a Rigol oscilloscope. The keys of the dictionary are only written, if</span>
+
+<span class="sd"> * the key begins with a colon (:)</span>
+<span class="sd"> * does not end with a question mark (?)</span>
+<span class="sd">  </span>
+<span class="sd">  :param settingsDict: dictionary dictionary</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">for</span> <span class="n">_key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">settingsDict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+   <span class="k">if</span> <span class="n">_key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;?&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_key</span><span class="p">:</span>
+     <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">:</span>
+      <span class="n">key</span> <span class="o">+=</span> <span class="n">c</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+     <span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+     <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="p">)</span></div>
+   
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getACQSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getACQSettings">[docs]</a> <span class="k">def</span> <span class="nf">getACQSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;The acquire settings describe the features of the digital electronics.</span>
+<span class="sd">For the :ACQuire command, it returns the following settings:</span>
+
+<span class="sd">.. csv-table:: ACQ Settings</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30, 50</span>
+<span class="sd">   </span>
+<span class="sd"> *:ACQuire:AVERages*, int, Number of averages (2 ... 1024)</span>
+<span class="sd"> *:ACQuire:MDEPth*, AUTO|int, Memory depth (dep: number of enabled channels)</span>
+<span class="sd"> *:ACQuire:SRATe?*, float, Sample rate in Hz</span>
+<span class="sd"> *:ACQuire:TYPE*, NORM|AVER|PEAK|HRES, Acquisition mode</span>
+<span class="sd"> *MDEPthPerTimeDivision?*, int, :ACQuire:MDEPth in one Timebase unit (div)</span>
+<span class="sd"> </span>
+<span class="sd">All parameters ending with a ? are readonly, the others are RW.</span>
+
+<span class="sd">:returns: Dict[key, value]</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">acqSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:AVERages&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:ACQ:AVER?&#39;</span><span class="p">))</span>
+  <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:ACQ:MDEP?&#39;</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;AUTO&#39;</span><span class="p">:</span>
+   <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">])</span>
+  <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:SRATe?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:ACQ:SRAT?&#39;</span><span class="p">))</span>
+  <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:TYPE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:ACQ:TYPE?&#39;</span><span class="p">)</span>
+  <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;MDEPthPerTimeDivision?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:SRATe?&#39;</span><span class="p">]</span>  <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TIM:SCAL?&#39;</span><span class="p">)))</span>
+  <span class="k">if</span> <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;AUTO&#39;</span><span class="p">:</span>
+   <span class="n">points</span> <span class="o">=</span> <span class="p">(</span><span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;MDEPthPerTimeDivision?&#39;</span><span class="p">]</span>  <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTimeDivisions</span><span class="p">)</span> 
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">points</span> <span class="o">=</span> <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">]</span>
+  <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;SamplingTime?&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">points</span> <span class="o">*</span> <span class="n">acqSettingsDict</span><span class="p">[</span><span class="s1">&#39;:ACQuire:SRATe?&#39;</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">acqSettingsDict</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getCHANSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getCHANSettings">[docs]</a> <span class="k">def</span> <span class="nf">getCHANSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span> <span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;For the :CHANnel command, it returns the following settings:</span>
+
+<span class="sd">.. csv-table:: CHAN Settings</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30, 50</span>
+<span class="sd">   </span>
+<span class="sd"> *:CHAN&lt;n&gt;:BWLimit*, OFF|20M, Bandwidth limit</span>
+<span class="sd"> *:CHAN&lt;n&gt;:COUPling*, AC|DC|GND, Coupling mode</span>
+<span class="sd"> *:CHAN&lt;n&gt;:DISPlay*, 0|1, Channel status query</span>
+<span class="sd"> *:CHAN&lt;n&gt;:INVert*, 0|1, Inverted display mode status query</span>
+<span class="sd"> *:CHAN&lt;n&gt;:OFFSet*, float, vertical offset (in *Units*)</span>
+<span class="sd"> *:CHAN&lt;n&gt;:RANGe*, float, vertical range (in *Units*)</span>
+<span class="sd"> *:CHAN&lt;n&gt;:SCALe*, float, vertical scale (in *Units*)</span>
+<span class="sd"> *:CHAN&lt;n&gt;:TCAL*, float, calibration time (in s)</span>
+<span class="sd"> *:CHAN&lt;n&gt;:UNITs*, VOLT|WATT|AMP|UNKN, amplitude display unit</span>
+<span class="sd"> *:CHAN&lt;n&gt;:VERNier*, 0|1, Fine adjustment of the vertical scale</span>
+<span class="sd"> </span>
+<span class="sd">All parameters are RW.</span>
+
+<span class="sd">:param n: analog channel to be queried</span>
+
+<span class="sd">:returns: Dict[key, value]</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfAnalogChannels</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+  <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_key</span><span class="p">,</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">n</span><span class="p">:</span> <span class="s1">&#39;:CHAN</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">_key</span><span class="p">)</span>
+  <span class="n">chSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BWLimit&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BWL?&#39;</span><span class="p">))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;COUPling&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;COUP?&#39;</span><span class="p">))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DISPlay&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DISP?&#39;</span><span class="p">)))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;INVert&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;INV?&#39;</span><span class="p">)))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;OFFSet&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;OFFS?&#39;</span><span class="p">)))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;PROBe&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;PROB?&#39;</span><span class="p">)))</span>
+  <span class="k">try</span><span class="p">:</span>
+   <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;RANGe&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;RANG?&#39;</span><span class="p">)))</span>
+  <span class="k">except</span><span class="p">:</span>
+   <span class="k">pass</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SCALe&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SCAL?&#39;</span><span class="p">)))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TCAL&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TCAL?&#39;</span><span class="p">)))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;UNITs&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;UNIT?&#39;</span><span class="p">))</span>
+  <span class="n">chSettingsDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;VERNier&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;VERN?&#39;</span><span class="p">)))</span>
+  <span class="k">return</span> <span class="n">chSettingsDict</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getDISPSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getDISPSettings">[docs]</a> <span class="k">def</span> <span class="nf">getDISPSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;For the :DISPlay command, it returns the following settings:</span>
+
+<span class="sd">:returns: Dict[key, value]</span>
+
+<span class="sd">.. csv-table:: DISP Settings</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30, 50</span>
+<span class="sd">   </span>
+<span class="sd"> *:DISPlay:TYPE*, VECT|DOTS, Display style (line or dots)</span>
+<span class="sd"> *:DISPlay:GRADing:TIME*, MIN|0.1|0.2|0.5|1|5|10|INFinite, Persistence time in seconds</span>
+<span class="sd"> *:DISPlay:GRID*, FULL|HALF|NONE, Grid type </span>
+<span class="sd"> *:DISPlay:GBRightness*, 0 ... 100, Grid brightness in % </span>
+<span class="sd"> *:DISPlay:WBRightness*, 0 ... 100, Waveform brightness in % </span>
+<span class="sd"> </span>
+<span class="sd">All parameters are RW.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">dispSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">dispSettingsDict</span><span class="p">[</span><span class="s1">&#39;:DISPlay:TYPE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:DISP:TYPE?&#39;</span><span class="p">)</span>
+  <span class="n">dispSettingsDict</span><span class="p">[</span><span class="s1">&#39;:DISPlay:GRADing:TIME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:DISP:GRAD:TIME?&#39;</span><span class="p">)</span>
+  <span class="n">dispSettingsDict</span><span class="p">[</span><span class="s1">&#39;:DISPlay:GRID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:DISP:GRID?&#39;</span><span class="p">)</span>
+  <span class="n">dispSettingsDict</span><span class="p">[</span><span class="s1">&#39;:DISPlay:GBRightness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:DISP:GBR?&#39;</span><span class="p">))</span>
+  <span class="n">dispSettingsDict</span><span class="p">[</span><span class="s1">&#39;:DISPlay:WBRightness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:DISP:WBR?&#39;</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">dispSettingsDict</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getDISPData"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getDISPData">[docs]</a> <span class="k">def</span> <span class="nf">getDISPData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">invert</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">fmt</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;BMP&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytearray</span><span class="p">:</span>
+  <span class="sd">&quot;&quot;&quot;Returns :DISP:DATA? result, i.e. a screenshot of the oscilloscope.</span>
+
+<span class="sd">:param color: return a colored screenshot </span>
+<span class="sd">:param invert: return a inverted screenshot </span>
+<span class="sd">:param fmt: format of the image data (BMP|PNG|TIFF), JPEG is buggy</span>
+
+<span class="sd">:returns: binary data</span>
+
+<span class="sd">.. code-block:: python3</span>
+<span class="sd"> :caption: Display of a screenshot using the PIL package</span>
+
+<span class="sd">  import io</span>
+<span class="sd">  from RigolDS1000Z import DigitalOscilloscopeBase</span>
+<span class="sd">  from PIL import Image</span>
+
+<span class="sd">  dev = DigitalOscilloscopeBase(&lt;resourceName&gt;)</span>
+<span class="sd">  fmt = &#39;BMP&#39;</span>
+<span class="sd">  fp = io.BytesIO(dev.getDISPData(fmt = fmt))</span>
+<span class="sd">  img = Image.open(fp, mode = &quot;r&quot;, formats = [fmt])</span>
+<span class="sd">  img.show()</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">assert</span> <span class="n">fmt</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;BMP&#39;</span><span class="p">,</span> <span class="s1">&#39;PNG&#39;</span><span class="p">,</span> <span class="s1">&#39;TIFF&#39;</span><span class="p">]</span>
+  <span class="n">toOnOff</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">bv</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;OFF&#39;</span><span class="p">,</span> <span class="s1">&#39;ON&#39;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">bv</span><span class="p">)]</span>
+  <span class="k">if</span> <span class="n">fmt</span> <span class="o">==</span> <span class="s1">&#39;BMP&#39;</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">color</span><span class="p">:</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;BMP24&#39;</span>
+   <span class="k">else</span><span class="p">:</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;BMP8&#39;</span>
+  <span class="k">try</span><span class="p">:</span>
+   <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_binary_values</span><span class="p">(</span><span class="s1">&#39;:DISP:DATA? </span><span class="si">{}</span><span class="s1">,</span><span class="si">{}</span><span class="s1">,</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">toOnOff</span><span class="p">(</span><span class="n">color</span><span class="p">),</span> <span class="n">toOnOff</span><span class="p">(</span><span class="n">invert</span><span class="p">),</span> <span class="n">fmt</span><span class="p">),</span>  <span class="n">datatype</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span><span class="p">))</span>
+  <span class="k">except</span><span class="p">:</span>
+   <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_binary_values</span><span class="p">(</span><span class="s1">&#39;:DISP:DATA?&#39;</span><span class="p">,</span>  <span class="n">datatype</span> <span class="o">=</span> <span class="s1">&#39;B&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getTRIGSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getTRIGSettings">[docs]</a> <span class="k">def</span> <span class="nf">getTRIGSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;For the :TRIGger command, it returns the following settings:</span>
+
+<span class="sd">:param mode: trigger mode</span>
+<span class="sd">:returns: Dict[key, value]</span>
+
+<span class="sd">.. csv-table:: Global Trigger Parameter</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30, 50</span>
+<span class="sd"> </span>
+<span class="sd"> *:TRIG:COUPling*, AC|DC|LFR|HFR, trigger coupling type</span>
+<span class="sd"> *:TRIG:HOLDoff*, float, trigger holdoff time</span>
+<span class="sd"> *:TRIG:MODE*, PATT|see below, Trigger type</span>
+<span class="sd"> *:TRIG:NREJect*, 0|1, status of noise rejection</span>
+<span class="sd"> *:TRIG:POSition?*, -2|-1|posint, waveform trigger position</span>
+<span class="sd"> *:TRIG:STATus?*, TD|WAIT|RUN|AUTO|STOP, trigger status</span>
+<span class="sd"> *:TRIG:SWEep*, AUTO|NORM|SING, trigger sweep mode</span>
+
+<span class="sd">.. csv-table:: Trigger Modes</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Opt&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 10, 50</span>
+<span class="sd">   </span>
+<span class="sd"> *:TRIG:DEL*, X, Delay between edges of 2 signals trigger</span>
+<span class="sd"> *:TRIG:DUR*,, Pulse train duration trigger</span>
+<span class="sd"> *:TRIG:EDGE*,, Edge trigger</span>
+<span class="sd"> *:TRIG:IIC*, X, I2C bus trigger</span>
+<span class="sd"> *:TRIG:NEDG*, X, Nth edge trigger after an idle time</span>
+<span class="sd"> *:TRIG:PULS*,, Pulse width trigger</span>
+<span class="sd"> *:TRIG:RS232*, X, RS232 bus trigger</span>
+<span class="sd"> *:TRIG:RUNT*, X, Runt pulse trigger</span>
+<span class="sd"> *:TRIG:SHOL*, X, Setup/hold time trigger</span>
+<span class="sd"> *:TRIG:SLOP*,, Edge slope trigger</span>
+<span class="sd"> *:TRIG:SPI*, X, SPI bus trigger</span>
+<span class="sd"> *:TRIG:TIM*, X, Minimum pulse width (timeout) trigger</span>
+<span class="sd"> *:TRIG:VID*,, Video trigger</span>
+<span class="sd"> *:TRIG:WIND*, X, Covered window trigger</span>
+
+<span class="sd">.. csv-table:: Trigger Mode Parameters</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30,50</span>
+
+<span class="sd"> *:TRIG:&lt;m&gt;:ADDRess*, int, address in I2C trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:AWIDth*, 7|8|10, address bits for *ADDRess*</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:BAUD|BUSer*, str, Baud rate in RS232 trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:CHAN&lt;n&gt;*, D&lt;n&gt;, AC</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:DIRection*, READ|WRIT|RWR, Direction in I2C trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:EDGE*, int, Number of edges in Nth edge trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:[HS]TIMe*, float, Hold/Setup time in SHOLd trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:IDLE*, float, idle time</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:[ABCDS]?LEVel*, float, trigger level</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:LINE*, int, line number in video trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:MODE*, POS|NEG, Polarity in video trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:PARity*, EVEN|ODD|NONE, Parity setting in RS232 trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:PATTern*, H| L, Pattern in SHOLd trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:POLarity*, ODD|EVEN|LINE|ALIN|POS|NEG, Polarity in video trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:S[AB]*, CHAN&lt;n&gt;, Source channel</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:SCL*, CHAN&lt;n&gt;|D&lt;n&gt;, SCL in I2C trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:SDA*, CHAN&lt;n&gt;|D&lt;n&gt;, SDA in I2C trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:SLOP[eAB]*, POS|NEG|RFAL, Edge type</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:SOURce*, CHAN&lt;n&gt;|D&lt;n&gt;|AC, Trigger source</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:STANdard*, PALS|NTSC|480P|576P, video standard</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:STOP*, 1|2, number of stop bits in RS232 trigger</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:TIME*, float, Time in SLOPe trigger (see *WHEN*)</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:TIMeout*, float, Timeout time</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:TLOWer*, float, Lower limit of time delay</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:TUPPer*, float, Lower limit of time delay</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:TYPe*, str, Context dependent (see DELay|DURATion|SHold)</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:WHEN*, str, Context dependent (see DURATion|IIC| PULSe|RS232|SLOPe|SPI)</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:[LU]?WIDTh*, float, Pulse width</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:WINDow*, TA|TB|TAB, vertical window type</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:WLOWer*, float, Lower limit of pulse with</span>
+<span class="sd"> *:TRIG:&lt;m&gt;:WUPPer*, float, Upper limit of pulse with</span>
+
+<span class="sd">All parameters ending with a ? as well as those of the trigger modes are readonly, the others are RW.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">_key</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span><span class="p">:</span> <span class="s1">&#39;:TRIG:</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">_key</span><span class="p">)</span>
+  <span class="n">allModes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EDGE&#39;</span><span class="p">,</span> <span class="s1">&#39;PULS&#39;</span><span class="p">,</span> <span class="s1">&#39;SLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;VID&#39;</span><span class="p">,</span> <span class="s1">&#39;DURAT&#39;</span><span class="p">,</span> <span class="s1">&#39;TIM&#39;</span><span class="p">,</span> <span class="s1">&#39;RUNT&#39;</span><span class="p">,</span> <span class="s1">&#39;WIND&#39;</span><span class="p">,</span> <span class="s1">&#39;DEL&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOL&#39;</span><span class="p">,</span>  <span class="s1">&#39;NEDG&#39;</span><span class="p">,</span> <span class="s1">&#39;RS232&#39;</span><span class="p">,</span> <span class="s1">&#39;IIC&#39;</span><span class="p">,</span> <span class="s1">&#39;SPI&#39;</span><span class="p">]</span>
+  <span class="n">triggerDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:MODE?&#39;</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span> 
+   <span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+   <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="n">allModes</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.getTriggerSettings: Mode </span><span class="si">{}</span><span class="s1"> not installed.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+  <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;:TRIG:COUPling?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:COUP?&#39;</span><span class="p">)</span>
+  <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;:TRIG:HOLDoff?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:HOLD?&#39;</span><span class="p">))</span>
+  <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;:TRIG:MODE?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mode</span>
+  <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;:TRIG:NREJect?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:NREJ?&#39;</span><span class="p">))</span>
+  <span class="k">try</span><span class="p">:</span>
+   <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;:TRIG:POSition?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:POS?&#39;</span><span class="p">))</span>
+  <span class="k">except</span><span class="p">:</span>
+   <span class="k">pass</span>
+  <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;:TRIG:STATus?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:STAT?&#39;</span><span class="p">)</span>
+  <span class="n">triggerDict</span><span class="p">[</span><span class="s1">&#39;SWEep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TRIG:SWE?&#39;</span><span class="p">)</span>
+  <span class="k">try</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;EDGE&#39;</span><span class="p">,</span> <span class="s1">&#39;PULS&#39;</span><span class="p">,</span> <span class="s1">&#39;SLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;VID&#39;</span><span class="p">,</span> <span class="s1">&#39;DURAT&#39;</span><span class="p">,</span> <span class="s1">&#39;TIM&#39;</span><span class="p">,</span> <span class="s1">&#39;RUNT&#39;</span><span class="p">,</span> <span class="s1">&#39;WIND&#39;</span><span class="p">,</span> <span class="s1">&#39;NEDG&#39;</span><span class="p">,</span> <span class="s1">&#39;RS232&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SOURce&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SOUR?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;EDGE&#39;</span><span class="p">,</span> <span class="s1">&#39;TIM&#39;</span><span class="p">,</span> <span class="s1">&#39;WIND&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOL&#39;</span><span class="p">,</span> <span class="s1">&#39;NEDG&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLOPe?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLOP?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;EDGE&#39;</span><span class="p">,</span> <span class="s1">&#39;PULS&#39;</span><span class="p">,</span> <span class="s1">&#39;VID&#39;</span><span class="p">,</span> <span class="s1">&#39;NEDG&#39;</span><span class="p">,</span> <span class="s1">&#39;RS232&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;LEVel?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;LEV?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;PULS&#39;</span><span class="p">,</span> <span class="s1">&#39;SLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;DURAT&#39;</span><span class="p">,</span> <span class="s1">&#39;RUNT&#39;</span><span class="p">,</span> <span class="s1">&#39;RS232&#39;</span><span class="p">,</span> <span class="s1">&#39;IIC&#39;</span><span class="p">,</span> <span class="s1">&#39;SPI&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WHEN?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WHEN?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;PULS&#39;</span><span class="p">,</span> <span class="s1">&#39;RS232&#39;</span><span class="p">,</span> <span class="s1">&#39;SPI&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WIDTh?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WIDT?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;PULS&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;UWIDth?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;UWID?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;LWIDth?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;LWID?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;TIM&#39;</span><span class="p">,</span> <span class="s1">&#39;WIND&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TIME?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TIME?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;DURAT&#39;</span><span class="p">,</span> <span class="s1">&#39;DEL&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TUPPer?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TUPP?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TLOWer?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TLOW?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SLOP&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WINDow?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WIND?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SLOP&#39;</span><span class="p">,</span> <span class="s1">&#39;RUNT&#39;</span><span class="p">,</span> <span class="s1">&#39;WIND&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;ALEVel?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;ALEV?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BLEVel?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BLEV?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;VID&#39;</span><span class="p">,</span> <span class="s1">&#39;RUNT&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;POLarity?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;POL?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;VID&#39;</span><span class="p">,</span> <span class="s1">&#39;SPI&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;MODE?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;MODE?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;VID&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;LINE?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;LINE?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;STANdard?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;STAN?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SHOL&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;PATTern?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;PATT?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;DURAT&#39;</span><span class="p">,</span> <span class="s1">&#39;DEL&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOL&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TYPe?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TYP?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;RUNT&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WUPPer?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WUPP?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WLOWer?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;WLOW?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;WIND&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;POSition?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;POS?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;DEL&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SA?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SA?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLOPA?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLOPA?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SB?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SB?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLOPB?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLOPB?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SHOL&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;CSrc?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;CS?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DSrc?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;CS?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;STIMe?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;STIM?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;HTIMe?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;HTIM?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;NEDG&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;IDLE?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;IDLE?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;EDGE?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;EDGE?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;RS232&#39;</span><span class="p">,</span> <span class="s1">&#39;IIC&#39;</span><span class="p">,</span> <span class="s1">&#39;SPI&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DATA?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DATA?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;RS232&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;PARity?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;PAR?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;STOP?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;STOP?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BAUD?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BAUD?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BUSer?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;BUS?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;IIC&#39;</span><span class="p">,</span> <span class="s1">&#39;SPI&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SCL?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SCL?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SDA?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SDA?&#39;</span><span class="p">))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;CLEVel?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;CLEV?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DLEVel?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DLEV?&#39;</span><span class="p">)))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;IIC&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;AWIDth?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;AWID?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;ADDRess?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;ADDR?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DIRection?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;DIR?&#39;</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span>  <span class="p">[</span><span class="s1">&#39;SPI&#39;</span><span class="p">]:</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TIMeout?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;TIM?&#39;</span><span class="p">)))</span>
+    <span class="n">triggerDict</span><span class="p">[</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLEVel?&#39;</span><span class="p">)]</span> <span class="o">=</span>  <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="s1">&#39;SLEV?&#39;</span><span class="p">)))</span>
+  <span class="k">except</span> <span class="n">driver</span><span class="o">.</span><span class="n">RigolError</span><span class="p">:</span>
+   <span class="k">raise</span> <span class="n">driver</span><span class="o">.</span><span class="n">RigolError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.getTriggerSettings: Mode </span><span class="si">{}</span><span class="s1"> not installed.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">mode</span><span class="p">))</span>
+  <span class="k">return</span> <span class="n">triggerDict</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getTIMSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getTIMSettings">[docs]</a> <span class="k">def</span> <span class="nf">getTIMSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;For the :TIMebase command, it returns the following settings:</span>
+
+<span class="sd">.. csv-table:: TIM Settings</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30, 50</span>
+
+<span class="sd">  *:TIM:MODE*, MAIN|XY|ROLL, Mode of the horizontal axis</span>
+<span class="sd">  *:TIM:DELay:ENABle*, 0|1, Status of the delayed sweep  </span>
+<span class="sd">  *:TIM:DELay:OFFSet*, float, Delayed timebase offset (only for :TIM:DELay:ENABle mode) </span>
+<span class="sd">  *:TIM:OFFSet*, float, Timebase offset (not for XY and :TIM:DELay:ENABle mode)</span>
+<span class="sd">  *:TIM:SCALe*, float, Timebase scale (not for XY and :TIM:DELay:ENABle mode)  </span>
+<span class="sd">  *TIM:TL*, float, Time at the left edge of the screen (not for XY and :TIM:DELay:ENABle mode)  </span>
+<span class="sd">  *TIM:TR*, float, Time at the right edge of the screen (not for XY and :TIM:DELay:ENABle mode)  </span>
+<span class="sd">  </span>
+<span class="sd">All parameters are RW.</span>
+
+<span class="sd">:returns: Dict[key, value]</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">timSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:MODE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TIM:MODE?&#39;</span><span class="p">)</span>
+  <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:DELay:ENABle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TIM:DEL:ENAB?&#39;</span><span class="p">))</span>
+  <span class="k">if</span> <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:DELay:ENABle&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+   <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:DELay:OFFSet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TIM:DEL:OFFS?&#39;</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:OFFSet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TIM:OFFS?&#39;</span><span class="p">))</span>
+   <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:SCALe&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:TIM:SCAL?&#39;</span><span class="p">))</span>
+   <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;TIM:TL?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:OFFSet&#39;</span><span class="p">]</span>
+   <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;TIM:TR?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;TIM:TL?&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">timSettingsDict</span><span class="p">[</span><span class="s1">&#39;:TIM:SCALe&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTimeDivisions</span>
+  <span class="k">return</span> <span class="n">timSettingsDict</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getWAVSettings"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getWAVSettings">[docs]</a> <span class="k">def</span> <span class="nf">getWAVSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;For the :WAVeform command, it returns the following settings:</span>
+
+<span class="sd">.. csv-table:: WAV Settings</span>
+<span class="sd"> :header: &quot;Key&quot;, &quot;Range&quot;, &quot;Description&quot;</span>
+<span class="sd"> :widths: 30, 30, 50</span>
+
+<span class="sd">  *:WAV:SOURce*,CHAN&lt;n&gt;|D&lt;n&gt;|MATH, Waveform source</span>
+<span class="sd">  *:WAV:MODE*, NORMal|MAXimum|RAW, Waveform mode</span>
+<span class="sd">  *:WAV:FORMat*, WORD|BYTE|ASCii, Waveform format</span>
+<span class="sd">  *:WAV:STARt?*, int, First point of the waveform (starting from 1)</span>
+<span class="sd">  *:WAV:STOP?*, int, Last point of the waveform (starting from 1)</span>
+<span class="sd">  *:WAV:XINCrement?*, float, time difference between two neighboring points</span>
+<span class="sd">  *:WAV:XORigin?*, float, time of origin (always 0)</span>
+<span class="sd">  *:WAV:XREFerence?*, float, first point on the screen (always 0)</span>
+<span class="sd">  *:WAV:YINCrement?*, float, waveform amplitude increment in amplitude units</span>
+<span class="sd">  *:WAV:YORigin?*, int, waveform amplitude origin relative to YREFerence in YINCrement</span>
+<span class="sd">  *:WAV:YREFerence?*, int, waveform amplitude reference in YINCrement</span>
+<span class="sd">  *:WAV:PRE:Points?*, int, waveform amplitude reference in YINCrement</span>
+<span class="sd">  </span>
+<span class="sd">All parameters ending with a ? are readonly, the others are RW.</span>
+
+<span class="sd">.. note:: </span>
+<span class="sd"> When the oscillosope is in :RUN status, all modes behave like :WAV:MODE == NORMal</span>
+
+<span class="sd">:returns: Dict[key, value]</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">wfSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:SOURce&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:WAV:SOUR?&#39;</span><span class="p">)</span>
+  <span class="n">wfSettingsList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:WAV:PRE?&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:STARt?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:WAV:STAR?&#39;</span><span class="p">))</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:STOP?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:WAV:STOP?&#39;</span><span class="p">))</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:FORMat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;BYTE&#39;</span><span class="p">,</span> <span class="s1">&#39;WORD&#39;</span><span class="p">,</span> <span class="s1">&#39;ASCii&#39;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:MODE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NORMal&#39;</span><span class="p">,</span> <span class="s1">&#39;MAXimum&#39;</span><span class="p">,</span> <span class="s1">&#39;RAW&#39;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:POINts?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:XINcrement?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:XORigin?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:XREFerence?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:YINcrement?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:YORigin?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span>
+  <span class="n">wfSettingsDict</span><span class="p">[</span><span class="s1">&#39;:WAV:YREFerence?&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">wfSettingsList</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span>
+  <span class="k">return</span> <span class="n">wfSettingsDict</span></div>
+
+<div class="viewcode-block" id="DigitalOscilloscopeBase.getWAVData"><a class="viewcode-back" href="../base.html#base.DigitalOscilloscopeBase.getWAVData">[docs]</a> <span class="k">def</span> <span class="nf">getWAVData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SOURce</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">MODE</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;MAX&#39;</span><span class="p">,</span> <span class="n">FORMat</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;BYTE&#39;</span><span class="p">,</span> <span class="n">showHiddenData</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+  <span class="sd">&quot;&quot;&quot;Return :WAV:DATA </span>
+
+<span class="sd">:param SOURce: Waveform source (CHAN&lt;n&gt;|D&lt;n&gt;|MATH)</span>
+<span class="sd">:param MODE: Waveform mode (NORM|MAX|RAW)</span>
+<span class="sd">:param FORMat: Waveform format (WORD|BYTE|ASC)</span>
+<span class="sd">:param reScale: Rescale Y axis </span>
+<span class="sd">:param showHiddenData: Show also hidden data (if Oscilloscope is in :STOP state)</span>
+
+<span class="sd">:returns: Dict[key, value]</span>
+
+<span class="sd">.. code-block:: python3</span>
+<span class="sd"> :caption: Display of a waveform using the matplotlib package</span>
+
+<span class="sd">  from RigolDS1000Z import DigitalOscilloscopeBase</span>
+<span class="sd">  import matplotlib.pyplot as plt</span>
+
+<span class="sd">  dev = DigitalOscilloscopeBase(&lt;resourceName&gt;)</span>
+<span class="sd">  chData = dev.getWAVData(&#39;CHAN1&#39;.format(channel), showHiddenData = False)</span>
+<span class="sd">  timSettings = dev.getTIMSettings()</span>
+<span class="sd">  tData = numpy.linspace(timSettings[&#39;TIM:TL?&#39;], timSettings[&#39;TIM:TR?&#39;], num = len(chData))</span>
+<span class="sd">  plt.plot(tData, chData)</span>
+<span class="sd">  plt.show()</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="nf">setParam</span><span class="p">(</span><span class="n">cmd</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="k">try</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+   <span class="k">except</span> <span class="n">driver</span><span class="o">.</span><span class="n">RigolError</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Improper parameter </span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    
+  <span class="k">def</span> <span class="nf">getDataBatch</span><span class="p">(</span><span class="n">wfFORMat</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span> <span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">stop</span> <span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">offsetIncr</span> <span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:WAV:STARt </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">start</span><span class="p">))</span>
+   <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:WAV:STOP </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stop</span><span class="p">))</span>
+   <span class="k">if</span> <span class="n">wfFORMat</span> <span class="o">==</span> <span class="s1">&#39;BYTE&#39;</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">offsetIncr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">offset</span><span class="p">,</span> <span class="n">incr</span> <span class="o">=</span> <span class="n">offsetIncr</span>
+    <span class="n">wfData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_binary_values</span><span class="p">(</span><span class="s1">&#39;:WAV:DATA?&#39;</span><span class="p">,</span> <span class="n">datatype</span> <span class="o">=</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">container</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span> <span class="n">delay_msec</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">20</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">wfData</span><span class="p">):</span>
+     <span class="n">wfData</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">wfData</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">offset</span><span class="p">)</span><span class="o">*</span><span class="n">incr</span>
+   <span class="k">else</span><span class="p">:</span>
+    <span class="n">wfData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_ascii_values</span><span class="p">(</span><span class="s1">&#39;:WAV:DATA?&#39;</span><span class="p">,</span> <span class="n">converter</span> <span class="o">=</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="n">container</span> <span class="o">=</span> <span class="nb">list</span><span class="p">,</span> <span class="n">delay_msec</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
+   <span class="k">return</span> <span class="n">wfData</span>
+   
+  <span class="n">SOURce</span> <span class="o">=</span> <span class="n">SOURce</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> 
+  <span class="k">if</span> <span class="n">SOURce</span> <span class="o">==</span> <span class="s1">&#39;MATH&#39;</span><span class="p">:</span>
+   <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:MATH:DISP?&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s2">&quot;SOURce == MATH not displayed&quot;</span>
+   <span class="n">channel</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+   <span class="n">srcType</span> <span class="o">=</span> <span class="mi">2</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="s1">&#39;D([1-9][0-9])&#39;</span><span class="p">,</span> <span class="n">SOURce</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfDigitalChannels</span><span class="p">,</span> <span class="s2">&quot;Improper parameter SOURCe = D</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+    <span class="n">srcType</span> <span class="o">=</span> <span class="mi">1</span>
+   <span class="k">else</span><span class="p">:</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="s1">&#39;CHAN([1-9])&#39;</span><span class="p">,</span> <span class="n">SOURce</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfAnalogChannels</span><span class="p">,</span> <span class="s2">&quot;Improper parameter SOURCe = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SOURce</span><span class="p">)</span>
+    <span class="n">channel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;:CHAN</span><span class="si">{}</span><span class="s1">:DISP?&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">))</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s2">&quot;SOURce == CHAN</span><span class="si">{}</span><span class="s2"> not displayed&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+    <span class="n">srcType</span> <span class="o">=</span> <span class="mi">0</span>
+
+  <span class="n">setParam</span><span class="p">(</span><span class="s1">&#39;:WAV:SOUR&#39;</span><span class="p">,</span> <span class="n">SOURce</span><span class="p">)</span>
+  <span class="n">MODE</span> <span class="o">=</span> <span class="n">MODE</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+  <span class="k">assert</span> <span class="n">MODE</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;NORM&#39;</span><span class="p">,</span> <span class="s1">&#39;MAX&#39;</span><span class="p">,</span> <span class="s1">&#39;RAW&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">srcType</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s1">&#39;NORM&#39;</span><span class="p">),</span> <span class="s2">&quot;Improper parameter MODE = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">MODE</span><span class="p">)</span>
+  <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">triggerStatus</span> <span class="o">==</span> <span class="s1">&#39;STOP&#39;</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s1">&#39;MAX&#39;</span><span class="p">:</span>
+    <span class="n">MODE</span> <span class="o">=</span> <span class="s1">&#39;RAW&#39;</span>
+   <span class="k">else</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s1">&#39;RAW&#39;</span><span class="p">,</span> <span class="s2">&quot;Improper parameter MODE = </span><span class="si">{}</span><span class="s2"> in :STOP state&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">MODE</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="k">if</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s1">&#39;MAX&#39;</span><span class="p">:</span>
+    <span class="n">MODE</span> <span class="o">=</span> <span class="s1">&#39;NORM&#39;</span>
+   <span class="k">else</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s1">&#39;NORM&#39;</span><span class="p">,</span> <span class="s2">&quot;Improper parameter MODE = </span><span class="si">{}</span><span class="s2"> in :RUN state&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">MODE</span><span class="p">)</span>
+  <span class="n">setParam</span><span class="p">(</span><span class="s1">&#39;:WAV:MODE&#39;</span><span class="p">,</span> <span class="n">MODE</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">FORMat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+   <span class="n">FORMat</span> <span class="o">=</span> <span class="n">FORMat</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+   <span class="k">assert</span> <span class="n">FORMat</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;WORD&#39;</span><span class="p">,</span> <span class="s1">&#39;BYTE&#39;</span><span class="p">,</span> <span class="s1">&#39;ASC&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">srcType</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">FORMat</span> <span class="o">==</span> <span class="s1">&#39;BYTE&#39;</span><span class="p">),</span> <span class="s2">&quot;Improper parameter FORMat = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">FORMat</span><span class="p">)</span>
+   <span class="n">setParam</span><span class="p">(</span><span class="s1">&#39;:WAV:FORM&#39;</span><span class="p">,</span> <span class="n">FORMat</span><span class="p">)</span>
+
+  <span class="n">acqSettings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getACQSettings</span><span class="p">()</span>
+  <span class="n">wfSettings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getWAVSettings</span><span class="p">()</span>
+  <span class="n">mDepth</span> <span class="o">=</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:POINts?&#39;</span><span class="p">]</span>
+  <span class="k">assert</span> <span class="n">mDepth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Too many sampling points </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">acqSettings</span><span class="p">[</span><span class="s1">&#39;:ACQuire:MDEPth&#39;</span><span class="p">])</span>
+  <span class="n">wfIncrement</span> <span class="o">=</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:YINcrement?&#39;</span><span class="p">]</span>
+  <span class="n">wfOffset</span> <span class="o">=</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:YREFerence?&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:YORigin?&#39;</span><span class="p">]</span>
+
+  <span class="k">if</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:FORMat&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WORD&#39;</span><span class="p">:</span>
+   <span class="n">wfFORMat</span> <span class="o">=</span> <span class="s1">&#39;BYTE&#39;</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">wfFORMat</span> <span class="o">=</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:FORMat&#39;</span><span class="p">]</span>
+  <span class="k">if</span> <span class="n">wfFORMat</span> <span class="o">==</span> <span class="s1">&#39;BYTE&#39;</span><span class="p">:</span>
+   <span class="n">maxPointsPerBatch</span> <span class="o">=</span> <span class="mi">250000</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">maxPointsPerBatch</span> <span class="o">=</span> <span class="mi">15625</span>
+
+  <span class="k">if</span> <span class="n">wfSettings</span><span class="p">[</span><span class="s1">&#39;:WAV:MODE&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NORM&#39;</span><span class="p">:</span>
+   <span class="n">mDepth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTimeDivisions</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointsPerTimeDivision</span>
+  
+  <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">end</span> <span class="o">=</span> <span class="n">mDepth</span>
+  <span class="k">if</span> <span class="p">(</span> <span class="ow">not</span> <span class="n">showHiddenData</span><span class="p">)</span> \
+       <span class="ow">and</span> <span class="p">(</span><span class="n">MODE</span> <span class="o">==</span><span class="s1">&#39;RAW&#39;</span><span class="p">)</span> \
+        <span class="ow">and</span> <span class="p">(</span><span class="n">acqSettings</span><span class="p">[</span><span class="s1">&#39;MDEPthPerTimeDivision?&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTimeDivisions</span> <span class="o">&lt;</span> <span class="n">mDepth</span><span class="p">):</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="n">mDepth</span> <span class="o">-</span> <span class="n">acqSettings</span><span class="p">[</span><span class="s1">&#39;MDEPthPerTimeDivision?&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">numberOfTimeDivisions</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">mDepth</span> <span class="o">-</span> <span class="n">start</span>
+   
+  <span class="n">wfData</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+  <span class="k">while</span> <span class="n">start</span> <span class="o">+</span> <span class="n">maxPointsPerBatch</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+   <span class="n">wfData</span> <span class="o">+=</span> <span class="n">getDataBatch</span><span class="p">(</span><span class="n">wfFORMat</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">maxPointsPerBatch</span><span class="p">,</span> <span class="p">(</span><span class="n">wfOffset</span><span class="p">,</span> <span class="n">wfIncrement</span><span class="p">))</span>
+   <span class="n">start</span> <span class="o">+=</span> <span class="n">maxPointsPerBatch</span>
+
+  <span class="k">if</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+   <span class="n">wfData</span> <span class="o">+=</span> <span class="n">getDataBatch</span><span class="p">(</span><span class="n">wfFORMat</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="p">(</span><span class="n">wfOffset</span><span class="p">,</span> <span class="n">wfIncrement</span><span class="p">))</span>
+
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:WAV:STARt 1&#39;</span><span class="p">)</span>
+  <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;:WAV:STOP </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">numberOfTimeDivisions</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointsPerTimeDivision</span><span class="p">))</span>
+
+  <span class="k">return</span> <span class="n">wfData</span></div>
+
+ <span class="nd">@staticmethod</span>
+ <span class="k">def</span> <span class="nf">getTimeUnitAndScale</span><span class="p">(</span><span class="n">tSpan</span> <span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+  <span class="n">tUnit</span> <span class="o">=</span> <span class="s1">&#39;s&#39;</span>
+  <span class="k">if</span> <span class="n">tSpan</span> <span class="o">&lt;</span> <span class="mf">1.E-6</span><span class="p">:</span>
+   <span class="n">tScale</span> <span class="o">=</span> <span class="mf">1.E9</span>
+   <span class="n">tUnit</span> <span class="o">=</span> <span class="s1">&#39;ns&#39;</span>
+  <span class="k">elif</span> <span class="n">tSpan</span> <span class="o">&lt;</span> <span class="mf">1.E-3</span><span class="p">:</span>
+   <span class="n">tScale</span> <span class="o">=</span> <span class="mf">1.E6</span>
+   <span class="n">tUnit</span> <span class="o">=</span> <span class="s1">&#39;us&#39;</span>
+  <span class="k">elif</span> <span class="n">tSpan</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+   <span class="n">tScale</span> <span class="o">=</span> <span class="mf">1.E3</span>
+   <span class="n">tUnit</span> <span class="o">=</span> <span class="s1">&#39;ms&#39;</span>
+  <span class="k">else</span><span class="p">:</span>
+   <span class="n">tScale</span> <span class="o">=</span> <span class="mi">1</span> 
+  <span class="k">return</span> <span class="p">(</span><span class="n">tScale</span><span class="p">,</span> <span class="n">tUnit</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Reinhard März.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
