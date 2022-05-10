@@ -8,7 +8,7 @@ if __name__ == "__main__":
  fileDirectory = os.path.dirname(os.path.abspath(__file__)) 
  sys.path.insert(0, os.path.dirname(fileDirectory))
 
-from RigolDS1000Z import Instrument, RigolError
+from MzRigolDS1000Z import Instrument, RigolError
 
 def runCommand(dev, command, shouldFail = False) -> Union[str, bool]:
  try:

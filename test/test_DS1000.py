@@ -7,7 +7,7 @@ if __name__ == "__main__":
  fileDirectory = os.path.dirname(os.path.abspath(__file__)) 
  sys.path.insert(0, os.path.dirname(fileDirectory))
 
-from RigolDS1000Z import DS1000Z
+from MzRigolDS1000Z import DS1000Z
 
 def findOscilloscopeName() -> Optional[DS1000Z]:
  instruments = DS1000Z.discoverInstruments(notify = print)

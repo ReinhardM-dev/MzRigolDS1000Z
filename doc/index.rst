@@ -2,7 +2,7 @@
 .. _pyvisa: https://pypi.org/project/PyVISA/
 .. _VISA: https://en.wikipedia.org/wiki/Virtual_instrument_software_architecture
 
-RigolDS1000Z
+MzRigolDS1000Z
 ===========================
 A package which allows to realize the remote control of `RIGOL MSO1000Z/DS1000Z`_
 series digital oscilloscopes through the USB or the LAN bus.
@@ -26,7 +26,7 @@ implementing the “Virtual Instrument Software Architecture” (`VISA`_)
 Download the package using
 ::
 
-    pip install RigolDS1000Z
+    pip install MzRigolDS1000Z
     
     
 Contents

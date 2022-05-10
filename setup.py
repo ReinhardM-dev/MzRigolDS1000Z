@@ -12,14 +12,14 @@ sys.path.insert(0, fileDirectory)
 with open(os.path.join(packageDirectory,'readme.rst'), 'r', encoding = 'utf-8') as f:
  long_description = f.read()
 
-import RigolDS1000Z
-pkgVersion = RigolDS1000Z.__version__
+import MzRigolDS1000Z
+pkgVersion = MzRigolDS1000Z.__version__
 
 shutil.rmtree(os.path.join(fileDirectory, 'build'), ignore_errors = True)
 
 setup(name = package,
-  url = 'https://github.com/ReinhardM-dev/RigolDS1000Z', 
-  project_urls={ 'Documentation': 'https://reinhardm-dev.github.io/RigolDS1000Z' }, 
+  url = 'https://github.com/ReinhardM-dev/MzRigolDS1000Z', 
+  project_urls={ 'Documentation': 'https://reinhardm-dev.github.io/MzRigolDS1000Z' }, 
   version = pkgVersion,
   packages = [package],
   options={'bdist_wheel':{'universal':True}},

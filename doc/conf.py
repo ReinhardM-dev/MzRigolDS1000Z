@@ -14,19 +14,19 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath('..'))
-import RigolDS1000Z
+import MzRigolDS1000Z
 
 # sys.setrecursionlimit(15000)
 
 # -- Project information -----------------------------------------------------
 
-project = 'RigolDS1000Z'
+project = 'MzMzRigolDS1000Z'
 copyright = '2022, Reinhard März'
 author = 'Reinhard März'
 
 # The full version, including alpha/beta/rc tags
-release = 'V' + RigolDS1000Z.__version__
-version = 'V' + '.'.join(RigolDS1000Z.__version__.split('.')[:2])
+release = 'V' + MzRigolDS1000Z.__version__
+version = 'V' + '.'.join(MzRigolDS1000Z.__version__.split('.')[:2])
 
 # -- General configuration ---------------------------------------------------
 master_doc = 'index'
