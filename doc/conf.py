@@ -20,7 +20,7 @@ import MzRigolDS1000Z
 
 # -- Project information -----------------------------------------------------
 
-project = 'MzMzRigolDS1000Z'
+project = 'MzRigolDS1000Z'
 copyright = '2022, Reinhard März'
 author = 'Reinhard März'
 
