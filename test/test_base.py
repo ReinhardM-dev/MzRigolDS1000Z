@@ -1,6 +1,7 @@
 from typing import Optional
-# import pytest
-import re, io
+import re, io, time
+import pytest
+
 try:
  from PIL import Image, ImageFile
  hasPIL = True
@@ -23,15 +24,6 @@ if __name__ == "__main__":
 
 from RigolDS1000Z import DigitalOscilloscopeBase
 
-def compareDicts(dict1, dict2, header):
- keyList = dict1.keys()
- assert keyList == dict2.keys()
- keyList = list()
- for key, value in dict1.items():
-  if str(value) != str(dict2[key]): 
-   keyList.append(key)
- assert len(keyList) == 0, '{}: keys {} are different'.format(header, keyList)
- 
 def findOscilloscopeName() -> Optional[DigitalOscilloscopeBase]:
  instruments = DigitalOscilloscopeBase.discoverInstruments(notify = print)
  for instrument in instruments:
@@ -99,19 +91,22 @@ def runTIM(devName : Optional[str] = None):
 
 def test_TIM(pytestconfig):
  devName = pytestconfig.getoption('oscilloscope')
- runDISP(devName)
+ runTIM(devName)
 
 def runTRIG(devName : Optional[str] = None):
  if devName is None:
   devName = findOscilloscopeName()
  dev = DigitalOscilloscopeBase(devName)
- for mode in ['EDGE', 'PULS', 'SLOP', 'VID', 'DURAT', 'TIM', 'RUNT', 'WIND', 'DEL', 'SHOL',  'NEDG', 'RS232', 'IIC', 'SPI']:
-  trDict1 = dev.getTRIGSettings(mode)
+ trStart = dev.getTRIGSettings()
+ for mode in ['EDGE', 'PULS', 'SLOP', 'VID', 'DUR', 'TIM', 'RUNT', 'WIND', 'DEL', 'SHOL',  'NEDG', 'RS232', 'IIC']:
+  dev.write(':TRIG:MODE {}'.format(mode))
+  time.sleep(0.3)
+  trDict1 = dev.getTRIGSettings()
   dev.setSettings(trDict1)
-  trDict2 = dev.getTRIGSettings(mode)
-  del trDict1[':TRIG:POSition?']
-  del trDict2[':TRIG:POSition?']
-  compareDicts(trDict1, trDict2, mode)
+  time.sleep(0.1)
+  trDict2 = dev.getTRIGSettings()
+  pytest.helpers.compareDicts(trDict1, trDict2, mode)
+ dev.setSettings(trStart)
  assert dev.query(':TRIG:STAT?') == dev.triggerStatus
 
 def test_TRIG(pytestconfig):

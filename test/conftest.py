@@ -1,3 +1,4 @@
+from typing import Dict, Any
 import sys
 import platform
 if platform.system() == 'Windows':
@@ -23,6 +24,19 @@ def pytest_addoption(parser):
 @pytest.helpers.register
 def notify(pytestconfig): 
  return [None, print][pytestconfig.getoption('notify')]
+
+@pytest.helpers.register
+def compareDicts(dict1 : Dict[str, Any], dict2 : Dict[str, Any], header :str) -> None:
+ keyList = dict1.keys()
+ assert keyList == dict2.keys()
+ keyList = list()
+ for key, value in dict1.items():
+  if str(value) != str(dict2[key]): 
+   keyList.append(key)
+ if len(keyList) != 0:
+  print('WARNING: {}, keys differ'.format(header))
+  for key in keyList:
+   print(' {:<20} : {:>20} {:>20}'.format(key, dict1[key], dict2[key]))
 
 @pytest.helpers.register
 def message(pytestconfig): 

@@ -3,8 +3,8 @@ __description__ = \
 Rigol oscilloscope of series DS1000/MSO1000
 """
 __author__ = "Reinhard Maerz"
-__date__ = "2022-05-01"
-__version__ = "0.9.0"
+__date__ = "2022-05-10"
+__version__ = "0.9.5"
 
 import os
 import sys

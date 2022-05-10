@@ -221,8 +221,10 @@ Class of enhanced Rigol DS1000Z and MSO DS1000Z operations:
 
   return measThDict
 
- def getCURSSettings(self, mode : Optional[str] = None ) -> Dict[str, Any]:
+ def getCURSSettings(self) -> Dict[str, Any]:
   """For the :CURSor command, it returns the following settings:
+
+:returns: Dict[key, value]
 
 .. csv-table:: CURSor Modes
  :header: "Key", "Description"
@@ -258,21 +260,14 @@ Class of enhanced Rigol DS1000Z and MSO DS1000Z operations:
  *:CURS:AUTO:ITEM*, str, Item defining the cursors (see :MEAS:ITEM)
 
 All parameters ending with a ? are readonly, the others are RW.
-
-:param mode: cursor mode
-
-:returns: Dict[key, value]
   """
-  key = lambda _key, mode = mode: ':CURS:{}:{}'.format(mode, _key)
-  allModes = ['MAN', 'TRAC', 'AUTO', 'XY']
+  mode = self.query(':CURS:MODE?')
   cursorDict = dict()
-  if mode is None:
-   mode = self.query(':CURS:MODE?')
-   if mode == 'OFF':
-    return cursorDict
-  else: 
-   mode = mode.upper()
-   assert mode in allModes, '{}.getCURSSettings: Mode {} not installed.'.format(self.__class__.__name__, mode)
+  cursorDict[':CURS:MODE'] = mode
+  if mode == 'OFF':
+   return cursorDict
+  key = lambda _key, mode = mode: ':CURS:{}:{}'.format(mode, _key)
+  # allModes = ['MAN', 'TRAC', 'AUTO', 'XY']
   for param in ['AX', 'BX', 'AY', 'BY']:
    qParam = '{}?'.format(param)
    if mode == 'AUTO' or (mode == 'TRAC' and param.endswith('Y')):

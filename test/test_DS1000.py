@@ -1,20 +1,6 @@
 from typing import Optional
-# import pytest
-import re, io
-try:
- from PIL import Image
- hasPIL = True
-except:
- print('PIL not installed')
- hasPIL = False
- 
-try:
- import numpy
- import matplotlib.pyplot as plt
- hasMatplotlib = True
-except:
- print('numpy and/or matplotlib not installed')
- hasMatplotlib = False
+import re, time
+import pytest
 
 if __name__ == "__main__":
  import os,  sys
@@ -23,15 +9,6 @@ if __name__ == "__main__":
 
 from RigolDS1000Z import DS1000Z
 
-def compareDicts(dict1, dict2, header):
- keyList = dict1.keys()
- assert keyList == dict2.keys()
- keyList = list()
- for key, value in dict1.items():
-  if str(value) != str(dict2[key]): 
-   keyList.append(key)
- assert len(keyList) == 0, '{}: keys {} are different'.format(header, keyList)
- 
 def findOscilloscopeName() -> Optional[DS1000Z]:
  instruments = DS1000Z.discoverInstruments(notify = print)
  for instrument in instruments:
@@ -46,11 +23,16 @@ def runCURS(devName : Optional[str] = None):
  if devName is None:
   devName = findOscilloscopeName()
  dev = DS1000Z(devName)
- for mode in ['MAN', 'TRAC', 'AUTO', 'XY']:
-  cursDict1 = dev.getCURSSettings(mode)
+ cursStart = dev.getCURSSettings()
+ for mode in ['MAN', 'TRAC', 'AUTO']:
+  dev.write(':CURS:MODE {}'.format(mode))
+  time.sleep(0.3)
+  cursDict1 = dev.getCURSSettings()
   dev.setSettings(cursDict1)
-  cursDict2 = dev.getCURSSettings(mode)
-  assert cursDict1 == cursDict2
+  time.sleep(0.1)
+  cursDict2 = dev.getCURSSettings()
+  pytest.helpers.compareDicts(cursDict1, cursDict2, mode)
+ dev.setSettings(cursStart)
 
 def test_CURS(pytestconfig):
  devName = pytestconfig.getoption('oscilloscope')
@@ -97,24 +79,17 @@ def test_MATH(pytestconfig):
  runMATH(devName)
 
 def runMEAS(devName : Optional[str] = None):
- def compareDicts(dict1, dict2, header):
-  keyList = dict1.keys()
-  assert keyList == dict2.keys()
-  print('*** {} ***'.format(header))
-  print('{:<30}, {:>30}, {:>30}'.format('Key', 'Dict1', 'Dict2'))
-  for key, value in dict1.items():
-   print('{:<30}, {:>30}, {:>30}'.format(key, str(value), str(dict2[key])))
  if devName is None:
   devName = findOscilloscopeName()
  dev = DS1000Z(devName)
  measDict1 = dev.getMEASItem1Source('CHAN1')
  dev.setSettings(measDict1)
  measDict2 = dev.getMEASItem1Source('CHAN1')
- compareDicts(measDict1, measDict2, 'getMEASItem1Source')
+ pytest.helpers.compareDicts(measDict1, measDict2, 'getMEASItem1Source')
  measDict1 = dev.getMEASItem2Source('CHAN1', 'CHAN2')
  dev.setSettings(measDict1)
  measDict2 = dev.getMEASItem2Source('CHAN1', 'CHAN2')
- compareDicts(measDict1, measDict2, 'getMEASItem2Source')
+ pytest.helpers.compareDicts(measDict1, measDict2, 'getMEASItem2Source')
  measDict1 = dev.getMEASThresholdSettings()
  dev.setSettings(measDict1)
  measDict2 = dev.getMEASThresholdSettings()
@@ -131,7 +106,7 @@ def runREF(devName : Optional[str] = None):
  refDict1 = dev.getREFSettings(1)
  dev.setSettings(refDict1)
  refDict2 = dev.getREFSettings(1)
- compareDicts(refDict1, refDict2, 'ref')
+ pytest.helpers.compareDicts(refDict1, refDict2, 'ref')
  dev.saveREFSettings(1)
 
 def test_REF(pytestconfig):

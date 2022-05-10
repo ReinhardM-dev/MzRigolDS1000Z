@@ -303,10 +303,9 @@ All parameters are RW.
   except:
    return bytearray(self.query_binary_values(':DISP:DATA?',  datatype = 'B'))
 
- def getTRIGSettings(self, mode : Optional[str] = None ) -> Dict[str, Any]:
+ def getTRIGSettings(self) -> Dict[str, Any]:
   """For the :TRIGger command, it returns the following settings:
 
-:param mode: trigger mode
 :returns: Dict[key, value]
 
 .. csv-table:: Global Trigger Parameter
@@ -376,19 +375,15 @@ All parameters are RW.
  *:TRIG:<m>:WLOWer*, float, Lower limit of pulse with
  *:TRIG:<m>:WUPPer*, float, Upper limit of pulse with
 
-All parameters ending with a ? as well as those of the trigger modes are readonly, the others are RW.
+All parameters ending with a ? are readonly, the others are RW.
   """
+  mode = self.query(':TRIG:MODE?')
   key = lambda _key, mode = mode: ':TRIG:{}:{}'.format(mode, _key)
-  allModes = ['EDGE', 'PULS', 'SLOP', 'VID', 'DURAT', 'TIM', 'RUNT', 'WIND', 'DEL', 'SHOL',  'NEDG', 'RS232', 'IIC', 'SPI']
+  # allModes = ['EDGE', 'PULS', 'SLOP', 'VID', 'DUR', 'TIM', 'RUNT', 'WIND', 'DEL', 'SHOL',  'NEDG', 'RS232', 'IIC', 'SPI']
   triggerDict = dict()
-  if mode is None:
-   mode = self.query(':TRIG:MODE?')
-  else: 
-   mode = mode.upper()
-   assert mode in allModes, '{}.getTriggerSettings: Mode {} not installed.'.format(self.__class__.__name__, mode)
   triggerDict[':TRIG:COUPling?'] = self.query(':TRIG:COUP?')
   triggerDict[':TRIG:HOLDoff?'] = float(self.query(':TRIG:HOLD?'))
-  triggerDict[':TRIG:MODE?'] = mode
+  triggerDict[':TRIG:MODE'] = mode
   triggerDict[':TRIG:NREJect?'] = int(self.query(':TRIG:NREJ?'))
   try:
    triggerDict[':TRIG:POSition?'] = int(self.query(':TRIG:POS?'))
@@ -400,40 +395,39 @@ All parameters ending with a ? as well as those of the trigger modes are readonl
    if mode in ['EDGE', 'PULS', 'SLOP', 'VID', 'DURAT', 'TIM', 'RUNT', 'WIND', 'NEDG', 'RS232']:
     triggerDict[key('SOURce')] =  self.query(key('SOUR?'))
    if mode in ['EDGE', 'TIM', 'WIND', 'SHOL', 'NEDG']:
-    triggerDict[key('SLOPe?')] =  self.query(key('SLOP?'))
+    triggerDict[key('SLOPe')] =  self.query(key('SLOP?'))
    if mode in ['EDGE', 'PULS', 'VID', 'NEDG', 'RS232']:
-    triggerDict[key('LEVel?')] =  float(self.query(key('LEV?')))
+    triggerDict[key('LEVel')] =  float(self.query(key('LEV?')))
    if mode in  ['PULS', 'SLOP', 'DURAT', 'RUNT', 'RS232', 'IIC', 'SPI']:
-    triggerDict[key('WHEN?')] =  self.query(key('WHEN?'))
-   if mode in  ['PULS', 'RS232', 'SPI']:
-    triggerDict[key('WIDTh?')] =  float(self.query(key('WIDT?')))
+    triggerDict[key('WHEN')] =  self.query(key('WHEN?'))
    if mode in  ['PULS']:
-    triggerDict[key('UWIDth?')] =  float(self.query(key('UWID?')))
-    triggerDict[key('LWIDth?')] =  float(self.query(key('LWID?')))
+    triggerDict[key('WIDTh')] =  float(self.query(key('WIDT?')))
+    triggerDict[key('UWIDth')] =  float(self.query(key('UWID?')))
+    triggerDict[key('LWIDth')] =  float(self.query(key('LWID?')))
    if mode in  ['SLOP', 'TIM', 'WIND']:
     triggerDict[key('TIME?')] =  float(self.query(key('TIME?')))
    if mode in  ['SLOP', 'DURAT', 'DEL']:
-    triggerDict[key('TUPPer?')] =  float(self.query(key('TUPP?')))
-    triggerDict[key('TLOWer?')] =  float(self.query(key('TLOW?')))
+    triggerDict[key('TUPPer')] =  float(self.query(key('TUPP?')))
+    triggerDict[key('TLOWer')] =  float(self.query(key('TLOW?')))
    if mode in  ['SLOP']:
-    triggerDict[key('WINDow?')] =  self.query(key('WIND?'))
+    triggerDict[key('WINDow')] =  self.query(key('WIND?'))
    if mode in  ['SLOP', 'RUNT', 'WIND']:
-    triggerDict[key('ALEVel?')] =  float(self.query(key('ALEV?')))
-    triggerDict[key('BLEVel?')] =  float(self.query(key('BLEV?')))
+    triggerDict[key('ALEVel')] =  float(self.query(key('ALEV?')))
+    triggerDict[key('BLEVel')] =  float(self.query(key('BLEV?')))
    if mode in  ['VID', 'RUNT']:
-    triggerDict[key('POLarity?')] =  self.query(key('POL?'))
+    triggerDict[key('POLarity')] =  self.query(key('POL?'))
    if mode in  ['VID', 'SPI']:
-    triggerDict[key('MODE?')] =  self.query(key('MODE?'))
+    triggerDict[key('MODE')] =  self.query(key('MODE?'))
    if mode in  ['VID']:
-    triggerDict[key('LINE?')] =  int(self.query(key('LINE?')))
-    triggerDict[key('STANdard?')] =  self.query(key('STAN?'))
+    triggerDict[key('LINE')] =  int(self.query(key('LINE?')))
+    triggerDict[key('STANdard')] =  self.query(key('STAN?'))
    if mode in  ['SHOL']:
-    triggerDict[key('PATTern?')] =  self.query(key('PATT?'))
+    triggerDict[key('PATTern')] =  self.query(key('PATT?'))
    if mode in  ['DURAT', 'DEL', 'SHOL']:
-    triggerDict[key('TYPe?')] =  self.query(key('TYP?'))
+    triggerDict[key('TYPe')] =  self.query(key('TYP?'))
    if mode in  ['RUNT']:
-    triggerDict[key('WUPPer?')] =  float(self.query(key('WUPP?')))
-    triggerDict[key('WLOWer?')] =  float(self.query(key('WLOW?')))
+    triggerDict[key('WUPPer')] =  float(self.query(key('WUPP?')))
+    triggerDict[key('WLOWer')] =  float(self.query(key('WLOW?')))
    if mode in  ['WIND']:
     triggerDict[key('POSition?')] =  self.query(key('POS?'))
    if mode in  ['DEL']:
@@ -442,32 +436,34 @@ All parameters ending with a ? as well as those of the trigger modes are readonl
     triggerDict[key('SB?')] =  self.query(key('SB?'))
     triggerDict[key('SLOPB?')] =  self.query(key('SLOPB?'))
    if mode in  ['SHOL']:
-    triggerDict[key('CSrc?')] =  self.query(key('CS?'))
-    triggerDict[key('DSrc?')] =  self.query(key('CS?'))
-    triggerDict[key('STIMe?')] =  float(self.query(key('STIM?')))
-    triggerDict[key('HTIMe?')] =  float(self.query(key('HTIM?')))
+    triggerDict[key('CSrc')] =  self.query(key('CS?'))
+    triggerDict[key('DSrc')] =  self.query(key('CS?'))
+    triggerDict[key('STIMe')] =  float(self.query(key('STIM?')))
+    triggerDict[key('HTIMe')] =  float(self.query(key('HTIM?')))
    if mode in  ['NEDG']:
-    triggerDict[key('IDLE?')] =  float(self.query(key('IDLE?')))
-    triggerDict[key('EDGE?')] =  int(self.query(key('EDGE?')))
+    triggerDict[key('IDLE')] =  float(self.query(key('IDLE?')))
+    triggerDict[key('EDGE')] =  int(self.query(key('EDGE?')))
    if mode in  ['RS232', 'IIC', 'SPI']:
-    triggerDict[key('DATA?')] =  self.query(key('DATA?'))
+    triggerDict[key('DATA')] =  self.query(key('DATA?'))
    if mode in  ['RS232']:
-    triggerDict[key('PARity?')] =  self.query(key('PAR?'))
-    triggerDict[key('STOP?')] =  self.query(key('STOP?'))
-    triggerDict[key('BAUD?')] =  self.query(key('BAUD?'))
-    triggerDict[key('BUSer?')] =  self.query(key('BUS?'))
+    triggerDict[key('WIDTh')] =  int(self.query(key('WIDT?')))
+    triggerDict[key('PARity')] =  self.query(key('PAR?'))
+    triggerDict[key('STOP')] =  self.query(key('STOP?'))
+    triggerDict[key('BAUD')] =  self.query(key('BAUD?'))
+    triggerDict[key('BUSer')] =  self.query(key('BUS?'))
    if mode in  ['IIC', 'SPI']:
-    triggerDict[key('SCL?')] =  self.query(key('SCL?'))
-    triggerDict[key('SDA?')] =  self.query(key('SDA?'))
-    triggerDict[key('CLEVel?')] =  float(self.query(key('CLEV?')))
-    triggerDict[key('DLEVel?')] =  float(self.query(key('DLEV?')))
+    triggerDict[key('SCL')] =  self.query(key('SCL?'))
+    triggerDict[key('SDA')] =  self.query(key('SDA?'))
+    triggerDict[key('CLEVel')] =  float(self.query(key('CLEV?')))
+    triggerDict[key('DLEVel')] =  float(self.query(key('DLEV?')))
    if mode in  ['IIC']:
-    triggerDict[key('AWIDth?')] =  int(self.query(key('AWID?')))
-    triggerDict[key('ADDRess?')] =  int(self.query(key('ADDR?')))
-    triggerDict[key('DIRection?')] =  self.query(key('DIR?'))
+    triggerDict[key('AWIDth')] =  int(self.query(key('AWID?')))
+    triggerDict[key('ADDRess')] =  int(self.query(key('ADDR?')))
+    triggerDict[key('DIRection')] =  self.query(key('DIR?'))
    if mode in  ['SPI']:
-    triggerDict[key('TIMeout?')] =  float(self.query(key('TIM?')))
-    triggerDict[key('SLEVel?')] =  float(self.query(key('SLEV?')))
+    triggerDict[key('WIDTh')] =  int(self.query(key('WIDT?')))
+    triggerDict[key('TIMeout')] =  float(self.query(key('TIM?')))
+    triggerDict[key('SLEVel')] =  float(self.query(key('SLEV?')))
   except driver.RigolError:
    raise driver.RigolError('{}.getTriggerSettings: Mode {} not installed.'.format(self.__class__.__name__, mode))
   return triggerDict
@@ -629,7 +625,7 @@ All parameters ending with a ? are readonly, the others are RW.
   acqSettings = self.getACQSettings()
   wfSettings = self.getWAVSettings()
   mDepth = wfSettings[':WAV:POINts?']
-  assert mDepth > 0, "Too many sampling points {}".format(acqSettings[':ACQuire:MDEPth'])
+  assert mDepth > 0, "No sampling points available (Trigger issues ?)"
   wfIncrement = wfSettings[':WAV:YINcrement?']
   wfOffset = wfSettings[':WAV:YREFerence?'] + wfSettings[':WAV:YORigin?']
 

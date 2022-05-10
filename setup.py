@@ -4,7 +4,7 @@ import os, os.path
 
 from setuptools import setup
 
-package = 'RigolDS1000'
+package = 'RigolDS1000Z'
 fileDirectory = os.path.dirname(os.path.abspath(__file__))
 packageDirectory = os.path.join(fileDirectory, package)
 sys.path.insert(0, fileDirectory)
